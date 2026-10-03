@@ -1607,4 +1607,442 @@ document.addEventListener("DOMContentLoaded", () => {
         ScrollTrigger.refresh();
     });
 
+    /* =========================================================
+   WHAT WE CAN DO — FINAL DRAWER ACCORDION
+========================================================= */
+
+function initServicesAccordion() {
+
+    const section =
+        document.querySelector('#services');
+
+    if (!section) {
+        console.warn('Services section not found');
+        return;
+    }
+
+
+    const items =
+        [...section.querySelectorAll('.service-item')];
+
+    console.log(
+        'Services found:',
+        items.length
+    );
+
+
+    if (!items.length) return;
+
+
+    /* -----------------------------------------------------
+       GET CONTENT
+    ----------------------------------------------------- */
+
+    const getContent = (item) => {
+
+        return item.querySelector(
+            '.service-content'
+        );
+
+    };
+
+
+    /* -----------------------------------------------------
+       OPEN
+    ----------------------------------------------------- */
+
+    function openItem(item, animate = true) {
+
+        const content =
+            getContent(item);
+
+        if (!content) {
+            console.warn(
+                'No service-content:',
+                item
+            );
+            return;
+        }
+
+
+        item.classList.add('active');
+
+
+        const trigger =
+            item.querySelector('.service-trigger');
+
+
+        if (trigger) {
+
+            trigger.setAttribute(
+                'aria-expanded',
+                'true'
+            );
+
+        }
+
+
+        /* ---------------------------------------------
+           Make content measurable
+        --------------------------------------------- */
+
+        content.style.visibility = 'visible';
+        content.style.display = 'block';
+
+
+        /* ---------------------------------------------
+           Instant opening
+        --------------------------------------------- */
+
+        if (!animate) {
+
+            content.style.height = 'auto';
+            content.style.opacity = '1';
+
+            return;
+
+        }
+
+
+        /* ---------------------------------------------
+           Start at zero
+        --------------------------------------------- */
+
+        content.style.height = '0px';
+        content.style.opacity = '0';
+
+
+        /* ---------------------------------------------
+           Measure AFTER browser layout
+        --------------------------------------------- */
+
+        requestAnimationFrame(() => {
+
+            const targetHeight =
+                content.scrollHeight;
+
+
+            console.log(
+                'Opening:',
+                item.dataset.service,
+                'height:',
+                targetHeight
+            );
+
+
+            content.style.height =
+                `${targetHeight}px`;
+
+            content.style.opacity = '1';
+
+        });
+
+
+        /* ---------------------------------------------
+           Convert pixel height → auto
+        --------------------------------------------- */
+
+        const finishOpen = (event) => {
+
+            if (
+                event.propertyName !==
+                'height'
+            ) {
+                return;
+            }
+
+
+            if (
+                item.classList.contains(
+                    'active'
+                )
+            ) {
+
+                content.style.height =
+                    'auto';
+
+            }
+
+
+            content.removeEventListener(
+                'transitionend',
+                finishOpen
+            );
+
+        };
+
+
+        content.addEventListener(
+            'transitionend',
+            finishOpen
+        );
+
+    }
+
+
+    /* -----------------------------------------------------
+       CLOSE
+    ----------------------------------------------------- */
+
+    function closeItem(item) {
+
+        const content =
+            getContent(item);
+
+        if (!content) return;
+
+
+        /*
+         * If currently auto,
+         * first convert it to pixels.
+         */
+
+        const currentHeight =
+            content.scrollHeight;
+
+
+        content.style.height =
+            `${currentHeight}px`;
+
+        content.style.opacity =
+            '1';
+
+
+        /*
+         * Force layout.
+         */
+
+        content.offsetHeight;
+
+
+        /*
+         * Remove active state.
+         */
+
+        item.classList.remove(
+            'active'
+        );
+
+
+        const trigger =
+            item.querySelector(
+                '.service-trigger'
+            );
+
+
+        if (trigger) {
+
+            trigger.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+
+        }
+
+
+        /*
+         * Slide upward.
+         */
+
+        requestAnimationFrame(() => {
+
+            content.style.height =
+                '0px';
+
+            content.style.opacity =
+                '0';
+
+        });
+
+    }
+
+
+    /* -----------------------------------------------------
+       CLICK
+    ----------------------------------------------------- */
+
+    items.forEach((item) => {
+
+        const trigger =
+            item.querySelector(
+                '.service-trigger'
+            );
+
+
+        if (!trigger) return;
+
+
+        trigger.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+
+                console.log(
+                    'Service clicked:',
+                    item.dataset.service
+                );
+
+
+                /*
+                 * CLICK ACTIVE
+                 * → CLOSE
+                 */
+
+                if (
+                    item.classList.contains(
+                        'active'
+                    )
+                ) {
+
+                    closeItem(item);
+
+                    return;
+
+                }
+
+
+                /*
+                 * CLOSE OTHERS
+                 */
+
+                items.forEach((other) => {
+
+                    if (
+                        other !== item &&
+                        other.classList.contains(
+                            'active'
+                        )
+                    ) {
+
+                        closeItem(other);
+
+                    }
+
+                });
+
+
+                /*
+                 * OPEN CLICKED
+                 */
+
+                openItem(item);
+
+            }
+        );
+
+    });
+
+
+    /* -----------------------------------------------------
+       INITIAL STATE
+    ----------------------------------------------------- */
+
+    items.forEach((item, index) => {
+
+        const content =
+            getContent(item);
+
+        if (!content) return;
+
+
+        if (index === 0) {
+
+            item.classList.add(
+                'active'
+            );
+
+
+            const trigger =
+                item.querySelector(
+                    '.service-trigger'
+                );
+
+
+            if (trigger) {
+
+                trigger.setAttribute(
+                    'aria-expanded',
+                    'true'
+                );
+
+            }
+
+
+            content.style.display =
+                'block';
+
+            content.style.visibility =
+                'visible';
+
+            content.style.opacity =
+                '1';
+
+            content.style.height =
+                'auto';
+
+
+        } else {
+
+            item.classList.remove(
+                'active'
+            );
+
+
+            const trigger =
+                item.querySelector(
+                    '.service-trigger'
+                );
+
+
+            if (trigger) {
+
+                trigger.setAttribute(
+                    'aria-expanded',
+                    'false'
+                );
+
+            }
+
+
+            content.style.display =
+                'block';
+
+            content.style.visibility =
+                'hidden';
+
+            content.style.opacity =
+                '0';
+
+            content.style.height =
+                '0px';
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   SAFE INITIALIZATION
+========================================================= */
+
+if (
+    document.readyState ===
+    'loading'
+) {
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        initServicesAccordion
+    );
+
+} else {
+
+    initServicesAccordion();
+
+}
+
 });
